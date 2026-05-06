@@ -172,7 +172,7 @@ function scoreColor(s){
 async function loadAll(){
   document.getElementById('lastUpdated').textContent = 'Refreshing...';
   try{
-    const r = await fetch(API+'/scores?limit=200');
+    const r = await fetch(API+'/scores/top?limit=200');
     const data = await r.json();
     allData = data.map(d=>({...d, tier:getTier(d.first_mover_score)}));
     updateStats();
