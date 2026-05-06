@@ -31,7 +31,7 @@ body{font-family:'Segoe UI',sans-serif;background:#0a0e1a;color:#e0e0e0;min-heig
 .filter-row{padding:12px 20px;border-bottom:1px solid #1e2840;display:flex;gap:8px;flex-wrap:wrap}
 .filter-btn{padding:6px 14px;border-radius:20px;border:1px solid #2a3a4a;background:transparent;color:#7a8fa6;cursor:pointer;font-size:12px}
 .filter-btn.active{background:#0080ff;border-color:#0080ff;color:#fff}
-.search-box{width:100%;padding:10px 16px;background:#0a0e1a;border:1px solid #1e2840;border-radius:8px;color:#e0e0e0;font-size:13px;margin:12px 16px;width:calc(100% - 32px)}
+.search-box{width:calc(100% - 32px);padding:10px 16px;background:#0a0e1a;border:1px solid #1e2840;border-radius:8px;color:#e0e0e0;font-size:13px;margin:12px 16px;display:block}
 .search-box:focus{outline:none;border-color:#0080ff}
 table{width:100%;border-collapse:collapse}
 table th{padding:10px 16px;font-size:11px;color:#7a8fa6;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid #1e2840;text-align:left}
@@ -39,19 +39,23 @@ table tr:hover{background:#111d2e;cursor:pointer}
 table tr.selected{background:#0d2040}
 table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
 .score-bar-wrap{display:flex;align-items:center;gap:8px}
-.score-bar{height:6px;border-radius:3px;background:#00d4aa;min-width:20px}
-.score-num{font-weight:600;color:#fff;min-width:32px}
+.score-bar{height:6px;border-radius:3px;background:#00d4aa;min-width:4px}
+.score-num{font-weight:600;color:#fff;min-width:36px}
 .tier-badge{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
 .tier-badge.boom{background:#003d2a;color:#00d4aa;border:1px solid #00d4aa}
 .tier-badge.warming{background:#2a2000;color:#ffaa00;border:1px solid #ffaa00}
 .tier-badge.neutral{background:#1e2840;color:#7a8fa6;border:1px solid #2a3a4a}
 .tier-badge.declining{background:#2a0a0a;color:#ff4444;border:1px solid #ff4444}
-.detail-panel{display:flex;flex-direction:column;gap:0}
+.detail-panel{display:flex;flex-direction:column}
 .detail-header{padding:20px}
 .detail-zip{font-size:32px;font-weight:700;color:#fff;line-height:1}
 .detail-city{font-size:14px;color:#7a8fa6;margin-top:4px}
 .detail-score-big{font-size:48px;font-weight:700;color:#00d4aa;margin:12px 0 4px}
-.detail-tier-badge{display:inline-block;padding:4px 14px;border-radius:14px;font-size:12px;font-weight:600;background:#003d2a;color:#00d4aa;border:1px solid #00d4aa;margin-bottom:16px}
+.detail-tier-badge{display:inline-block;padding:4px 14px;border-radius:14px;font-size:12px;font-weight:600;margin-bottom:16px}
+.detail-tier-badge.boom{background:#003d2a;color:#00d4aa;border:1px solid #00d4aa}
+.detail-tier-badge.warming{background:#2a2000;color:#ffaa00;border:1px solid #ffaa00}
+.detail-tier-badge.neutral{background:#1e2840;color:#7a8fa6;border:1px solid #2a3a4a}
+.detail-tier-badge.declining{background:#2a0a0a;color:#ff4444;border:1px solid #ff4444}
 .score-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 20px 20px}
 .score-tile{background:#111d2e;border:1px solid #1e2840;border-radius:10px;padding:14px}
 .score-tile .s-label{font-size:11px;color:#7a8fa6;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px}
@@ -59,6 +63,7 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
 .alerts-section{padding:16px 20px;border-top:1px solid #1e2840}
 .alerts-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px}
 .no-alerts{font-size:12px;color:#7a8fa6;font-style:italic}
+.placeholder-msg{padding:40px 20px;text-align:center;color:#7a8fa6;font-size:13px}
 </style>
 </head>
 <body>
@@ -78,34 +83,15 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
 
 <div class="container">
   <div class="stats-row">
-    <div class="stat-card">
-      <div class="label">Total Zip Codes</div>
-      <div class="value" id="totalZips">--</div>
-      <div class="sub">Atlanta Metro</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Top Score</div>
-      <div class="value green" id="topScore">--</div>
-      <div class="sub" id="topZipLabel">--</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Early Boom Zips</div>
-      <div class="value green" id="boomCount">--</div>
-      <div class="sub">Score &gt; 75</div>
-    </div>
-    <div class="stat-card">
-      <div class="label">Avg Score</div>
-      <div class="value" id="avgScore">--</div>
-      <div class="sub">All zips</div>
-    </div>
+    <div class="stat-card"><div class="label">Total Zip Codes</div><div class="value" id="totalZips">--</div><div class="sub">Atlanta Metro</div></div>
+    <div class="stat-card"><div class="label">Top Score</div><div class="value green" id="topScore">--</div><div class="sub" id="topZipLabel">--</div></div>
+    <div class="stat-card"><div class="label">Early Boom Zips</div><div class="value green" id="boomCount">--</div><div class="sub">Score &gt; 75</div></div>
+    <div class="stat-card"><div class="label">Avg Score</div><div class="value" id="avgScore">--</div><div class="sub">All zips</div></div>
   </div>
 
   <div class="main-grid">
     <div class="panel">
-      <div class="panel-header">
-        <h2>All Zip Codes</h2>
-        <span class="panel-count" id="panelCount">-- zips</span>
-      </div>
+      <div class="panel-header"><h2>All Zip Codes</h2><span class="panel-count" id="panelCount">-- zips</span></div>
       <div class="filter-row">
         <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
         <button class="filter-btn" onclick="setFilter('early_boom',this)">Early Boom</button>
@@ -120,24 +106,27 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
       </table>
     </div>
 
-    <div class="panel detail-panel">
-      <div class="detail-header">
-        <div class="detail-zip" id="detailZip">--</div>
-        <div class="detail-city" id="detailCity">Select a zip code</div>
-        <div class="detail-score-big" id="detailScore">--</div>
-        <div class="detail-tier-badge" id="detailTier">--</div>
-      </div>
-      <div class="score-grid">
-        <div class="score-tile"><div class="s-label">Business</div><div class="s-val" id="sBusiness">--</div></div>
-        <div class="score-tile"><div class="s-label">Liquor/Nite</div><div class="s-val" id="sLiquor">--</div></div>
-        <div class="score-tile"><div class="s-label">Schools</div><div class="s-val" id="sSchools">--</div></div>
-        <div class="score-tile"><div class="s-label">Google Trends</div><div class="s-val" id="sTrends">--</div></div>
-        <div class="score-tile"><div class="s-label">Building Permits</div><div class="s-val" id="sPermits">--</div></div>
-        <div class="score-tile"><div class="s-label">Score Date</div><div class="s-val" style="font-size:14px" id="sDate">--</div></div>
-      </div>
-      <div class="alerts-section">
-        <div class="alerts-title">Recent Alerts</div>
-        <div class="no-alerts" id="alertsBox">No alerts fired yet.</div>
+    <div class="panel detail-panel" id="detailPanel">
+      <div id="detailPlaceholder" class="placeholder-msg">Click any zip code to see full signal breakdown</div>
+      <div id="detailContent" style="display:none">
+        <div class="detail-header">
+          <div class="detail-zip" id="detailZip"></div>
+          <div class="detail-city" id="detailCity"></div>
+          <div class="detail-score-big" id="detailScore"></div>
+          <div class="detail-tier-badge" id="detailTier"></div>
+        </div>
+        <div class="score-grid">
+          <div class="score-tile"><div class="s-label">Business</div><div class="s-val" id="sBusiness">--</div></div>
+          <div class="score-tile"><div class="s-label">Liquor/Nite</div><div class="s-val" id="sLiquor">--</div></div>
+          <div class="score-tile"><div class="s-label">Schools</div><div class="s-val" id="sSchools">--</div></div>
+          <div class="score-tile"><div class="s-label">Google Trends</div><div class="s-val" id="sTrends">--</div></div>
+          <div class="score-tile"><div class="s-label">Building Permits</div><div class="s-val" id="sPermits">--</div></div>
+          <div class="score-tile"><div class="s-label">Score Date</div><div class="s-val" style="font-size:14px" id="sDate">--</div></div>
+        </div>
+        <div class="alerts-section">
+          <div class="alerts-title">Recent Alerts</div>
+          <div class="no-alerts">No alerts fired yet.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -149,31 +138,49 @@ let allZips = [];
 let currentFilter = 'all';
 let selectedZip = null;
 
+function getScore(z) {
+  return parseFloat(z.first_mover_score || z.composite_score || z.score || 0);
+}
+
+function getTier(z) {
+  if (z.tier) return z.tier;
+  const s = getScore(z);
+  if (s >= 75) return 'early_boom';
+  if (s >= 60) return 'warming';
+  if (s >= 40) return 'neutral';
+  return 'declining';
+}
+
+function tierLabel(tier) {
+  return tier === 'early_boom' ? 'EARLY BOOM' : tier === 'warming' ? 'WARMING' : tier === 'declining' ? 'DECLINING' : 'NEUTRAL';
+}
+
 async function loadData() {
   try {
     document.getElementById('lastUpdated').textContent = 'Loading...';
-    const res = await fetch(`${API}/scores/top?limit=100`);
+    const res = await fetch(API + '/scores/top?limit=100');
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    allZips = data.scores || data || [];
+    allZips = Array.isArray(data) ? data : (data.scores || []);
     updateStats();
     renderTable();
     const now = new Date();
     document.getElementById('lastUpdated').textContent = 'Updated: ' + now.toLocaleTimeString();
-    if (allZips.length > 0) selectZip(allZips[0]);
   } catch(e) {
-    document.getElementById('lastUpdated').textContent = 'Error loading data';
+    document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
     console.error(e);
   }
 }
 
 function updateStats() {
-  const boom = allZips.filter(z => z.tier === 'early_boom' || (z.composite_score||z.score) > 75);
-  const scores = allZips.map(z => z.composite_score || z.score || 0);
-  const top = allZips.reduce((a,b) => (a.composite_score||a.score||0) > (b.composite_score||b.score||0) ? a : b, {});
+  const scores = allZips.map(z => getScore(z));
+  const boom = allZips.filter(z => getScore(z) >= 75);
+  const topZ = allZips.reduce((a,b) => getScore(a) >= getScore(b) ? a : b, allZips[0] || {});
   document.getElementById('totalZips').textContent = allZips.length;
   document.getElementById('boomCount').textContent = boom.length;
-  document.getElementById('topScore').textContent = (top.composite_score || top.score || '--');
-  document.getElementById('topZipLabel').textContent = top.zip_code ? `${top.zip_code} \u2014 ${top.city||''}` : '--';
+  const topS = getScore(topZ);
+  document.getElementById('topScore').textContent = topS > 0 ? topS : '--';
+  document.getElementById('topZipLabel').textContent = topZ.zip_code ? topZ.zip_code + ' \u2014 ' + (topZ.city || '') : '--';
   const avg = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '--';
   document.getElementById('avgScore').textContent = avg;
 }
@@ -186,71 +193,52 @@ function setFilter(f, btn) {
 }
 
 function renderTable() {
-  const q = document.getElementById('searchBox').value.toLowerCase();
+  const q = (document.getElementById('searchBox').value || '').toLowerCase();
   let rows = allZips.filter(z => {
-    if (currentFilter !== 'all') {
-      const tier = z.tier || '';
-      const score = z.composite_score || z.score || 0;
-      if (currentFilter === 'early_boom' && tier !== 'early_boom' && score <= 75) return false;
-      if (currentFilter === 'warming' && tier !== 'warming') return false;
-      if (currentFilter === 'neutral' && tier !== 'neutral') return false;
-      if (currentFilter === 'declining' && tier !== 'declining') return false;
-    }
+    const tier = getTier(z);
+    if (currentFilter !== 'all' && tier !== currentFilter) return false;
     if (q && !String(z.zip_code).includes(q) && !(z.city||'').toLowerCase().includes(q)) return false;
     return true;
   });
+  rows.sort((a,b) => getScore(b) - getScore(a));
   document.getElementById('panelCount').textContent = rows.length + ' zips';
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = rows.map(z => {
-    const score = z.composite_score || z.score || 0;
-    const tier = z.tier || (score > 75 ? 'early_boom' : score > 60 ? 'warming' : 'neutral');
-    const tierLabel = tier === 'early_boom' ? 'EARLY BOOM' : tier === 'warming' ? 'WARMING' : tier === 'declining' ? 'DECLINING' : 'NEUTRAL';
-    const tierClass = tier === 'early_boom' ? 'boom' : tier === 'warming' ? 'warming' : tier === 'declining' ? 'declining' : 'neutral';
-    const barW = Math.round(score * 1.2);
-    const isSelected = selectedZip && selectedZip.zip_code === z.zip_code;
-    return `<tr onclick="selectZip(${JSON.stringify(z).replace(/"/g,'&quot;')})" class="${isSelected?'selected':''}">
-      <td><strong>${z.zip_code}</strong></td>
-      <td>${z.city||''}</td>
-      <td><div class="score-bar-wrap"><div class="score-bar" style="width:${barW}px"></div><span class="score-num">${score}</span></div></td>
-      <td><span class="tier-badge ${tierClass}">${tierLabel}</span></td>
-    </tr>`;
+    const score = getScore(z);
+    const tier = getTier(z);
+    const tClass = tier === 'early_boom' ? 'boom' : tier === 'warming' ? 'warming' : tier === 'declining' ? 'declining' : 'neutral';
+    const barW = Math.min(Math.round(score * 1.4), 140);
+    const isSel = selectedZip && selectedZip.zip_code === z.zip_code;
+    const zJson = JSON.stringify(z).replace(/"/g,'&quot;');
+    return '<tr onclick="selectZip(' + zJson + ')" class="' + (isSel?'selected':'') + '">'
+      + '<td><strong>' + z.zip_code + '</strong></td>'
+      + '<td>' + (z.city||'') + '</td>'
+      + '<td><div class="score-bar-wrap"><div class="score-bar" style="width:' + barW + 'px"></div><span class="score-num">' + score + '</span></div></td>'
+      + '<td><span class="tier-badge ' + tClass + '">' + tierLabel(tier) + '</span></td>'
+      + '</tr>';
   }).join('');
 }
 
 function selectZip(z) {
   selectedZip = z;
-  const score = z.composite_score || z.score || 0;
-  const tier = z.tier || (score > 75 ? 'early_boom' : score > 60 ? 'warming' : 'neutral');
-  const tierLabel = tier === 'early_boom' ? 'EARLY BOOM' : tier === 'warming' ? 'WARMING' : tier === 'declining' ? 'DECLINING' : 'NEUTRAL';
-  const tierClass = tier === 'early_boom' ? 'boom' : tier === 'warming' ? 'warming' : tier === 'declining' ? 'declining' : 'neutral';
+  const score = getScore(z);
+  const tier = getTier(z);
+  const tClass = tier === 'early_boom' ? 'boom' : tier === 'warming' ? 'warming' : tier === 'declining' ? 'declining' : 'neutral';
+  document.getElementById('detailPlaceholder').style.display = 'none';
+  document.getElementById('detailContent').style.display = 'block';
   document.getElementById('detailZip').textContent = z.zip_code;
   document.getElementById('detailCity').textContent = (z.city||'') + ', GA';
   document.getElementById('detailScore').textContent = score;
-  document.getElementById('detailTier').textContent = tierLabel;
-  document.getElementById('detailTier').className = 'detail-tier-badge ' + tierClass;
-  document.getElementById('sBusiness').textContent = z.business_score || '--';
-  document.getElementById('sLiquor').textContent = z.liquor_score || '--';
-  document.getElementById('sSchools').textContent = z.school_score || '--';
-  document.getElementById('sTrends').textContent = z.trends_score || '--';
-  document.getElementById('sPermits').textContent = z.permit_score || '--';
+  const tb = document.getElementById('detailTier');
+  tb.textContent = tierLabel(tier);
+  tb.className = 'detail-tier-badge ' + tClass;
+  document.getElementById('sBusiness').textContent = z.business_license_score != null ? z.business_license_score : '--';
+  document.getElementById('sLiquor').textContent = z.liquor_license_score != null ? z.liquor_license_score : '--';
+  document.getElementById('sSchools').textContent = z.school_enrollment_score != null ? z.school_enrollment_score : '--';
+  document.getElementById('sTrends').textContent = z.google_trends_score != null ? z.google_trends_score : '--';
+  document.getElementById('sPermits').textContent = z.building_permit_score != null ? z.building_permit_score : '--';
   document.getElementById('sDate').textContent = z.score_date || '--';
   renderTable();
-  loadExplain(z.zip_code);
-}
-
-async function loadExplain(zip) {
-  try {
-    const res = await fetch(`${API}/explain/${zip}`);
-    const data = await res.json();
-    if (data && data.scores) {
-      const s = data.scores;
-      if (s.business_score) document.getElementById('sBusiness').textContent = s.business_score;
-      if (s.liquor_score) document.getElementById('sLiquor').textContent = s.liquor_score;
-      if (s.school_score) document.getElementById('sSchools').textContent = s.school_score;
-      if (s.trends_score) document.getElementById('sTrends').textContent = s.trends_score;
-      if (s.permit_score) document.getElementById('sPermits').textContent = s.permit_score;
-    }
-  } catch(e) { /* silent fail, already showing base scores */ }
 }
 
 loadData();
