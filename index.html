@@ -243,6 +243,39 @@ function selectZip(z) {
   document.getElementById('sPermits').textContent = z.building_permit_score!=null ? fmt(z.building_permit_score) : '--';
   document.getElementById('sDate').textContent = fmtDate(z.score_date);
   renderTable();
+  loadBusinesses(z.zip_code);
+}
+async function loadBusinesses(zip) {
+  const el = document.getElementById('bizList');
+  if (!el) return;
+  el.innerHTML = '<div class="biz-loading">Loading businesses...</div>';
+  const ARCGIS_ZIPS = ['30005','30009','30022','30075','30076'];
+  if (!ARCGIS_ZIPS.includes(zip)) {
+    el.innerHTML = '<div class="biz-loading">No public business data available for this zip yet.</div>';
+    return;
+  }
+  try {
+    const url = 'https://alphagis.alpharetta.ga.us/maps/rest/services/OpenData/OpenData_BusinessLicenses/FeatureServer/1/query'
+      + '?where=ZipCode%3D%27'+zip+'%27&outFields=DBA,NAICSDescription,BusinessStartDate&f=json&resultRecordCount=20&orderByFields=BusinessStartDate+DESC';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed');
+    const data = await res.json();
+    const features = data.features || [];
+    if (!features.length) {
+      el.innerHTML = '<div class="biz-loading">No recent business records found for this zip.</div>';
+      return;
+    }
+    el.innerHTML = features.map(f => {
+      const a = f.attributes;
+      const name = (a.DBA || '').trim();
+      const type = (a.NAICSDescription || 'N/A').trim();
+      const raw = a.BusinessStartDate;
+      const date = raw ? new Date(raw).toISOString().slice(0,10) : 'N/A';
+      return '<div class="biz-item"><div class="biz-name">'+name+'</div><div class="biz-meta">'+type+' &middot; '+date+'</div></div>';
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="biz-loading">Unable to load businesses for this zip.</div>';
+  }
 }
 
 loadData();
