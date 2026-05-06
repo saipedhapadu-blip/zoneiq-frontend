@@ -63,17 +63,14 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
 .alerts-section{padding:16px 20px;border-top:1px solid #1e2840}
 .alerts-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px}
 .no-alerts{font-size:12px;color:#7a8fa6;font-style:italic}
-.placeholder-msg{padding:40px 20px;text-align:center;color:#7a8fa6;font-size:13px}
+.placeholder-msg{padding:60px 20px;text-align:center;color:#7a8fa6;font-size:13px;line-height:1.8}
 </style>
 </head>
 <body>
 <div class="header">
   <div class="logo">
     <div class="logo-icon">Z</div>
-    <div class="logo-text">
-      <h1>ZoneIQ</h1>
-      <p>Atlanta Metro &mdash; First Mover Score</p>
-    </div>
+    <div class="logo-text"><h1>ZoneIQ</h1><p>Atlanta Metro &mdash; First Mover Score</p></div>
   </div>
   <div class="header-right">
     <span class="last-updated" id="lastUpdated">Loading...</span>
@@ -85,7 +82,7 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
   <div class="stats-row">
     <div class="stat-card"><div class="label">Total Zip Codes</div><div class="value" id="totalZips">--</div><div class="sub">Atlanta Metro</div></div>
     <div class="stat-card"><div class="label">Top Score</div><div class="value green" id="topScore">--</div><div class="sub" id="topZipLabel">--</div></div>
-    <div class="stat-card"><div class="label">Early Boom Zips</div><div class="value green" id="boomCount">--</div><div class="sub">Score &gt; 75</div></div>
+    <div class="stat-card"><div class="label">Early Boom Zips</div><div class="value green" id="boomCount">--</div><div class="sub">Score &ge; 75</div></div>
     <div class="stat-card"><div class="label">Avg Score</div><div class="value" id="avgScore">--</div><div class="sub">All zips</div></div>
   </div>
 
@@ -106,8 +103,10 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
       </table>
     </div>
 
-    <div class="panel detail-panel" id="detailPanel">
-      <div id="detailPlaceholder" class="placeholder-msg">Click any zip code to see full signal breakdown</div>
+    <div class="panel detail-panel">
+      <div id="detailPlaceholder" class="placeholder-msg">
+        📍 Click any zip code<br>to see full signal breakdown
+      </div>
       <div id="detailContent" style="display:none">
         <div class="detail-header">
           <div class="detail-zip" id="detailZip"></div>
@@ -117,15 +116,15 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
         </div>
         <div class="score-grid">
           <div class="score-tile"><div class="s-label">Business</div><div class="s-val" id="sBusiness">--</div></div>
-          <div class="score-tile"><div class="s-label">Liquor/Nite</div><div class="s-val" id="sLiquor">--</div></div>
+          <div class="score-tile"><div class="s-label">Liquor / Nite</div><div class="s-val" id="sLiquor">--</div></div>
           <div class="score-tile"><div class="s-label">Schools</div><div class="s-val" id="sSchools">--</div></div>
           <div class="score-tile"><div class="s-label">Google Trends</div><div class="s-val" id="sTrends">--</div></div>
           <div class="score-tile"><div class="s-label">Building Permits</div><div class="s-val" id="sPermits">--</div></div>
-          <div class="score-tile"><div class="s-label">Score Date</div><div class="s-val" style="font-size:14px" id="sDate">--</div></div>
+          <div class="score-tile"><div class="s-label">Score Date</div><div class="s-val" style="font-size:13px;line-height:1.4" id="sDate">--</div></div>
         </div>
         <div class="alerts-section">
           <div class="alerts-title">Recent Alerts</div>
-          <div class="no-alerts">No alerts fired yet.</div>
+          <div class="no-alerts" id="alertsBox">No alerts fired yet for this zip.</div>
         </div>
       </div>
     </div>
@@ -134,25 +133,38 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
 
 <script>
 const API = 'https://web-production-31213.up.railway.app';
-let allZips = [];
-let currentFilter = 'all';
-let selectedZip = null;
+const CITY_MAP = {
+  '30005':'Alpharetta','30009':'Alpharetta','30022':'Johns Creek',
+  '30024':'Suwanee','30033':'Decatur','30040':'Cumming','30041':'Cumming',
+  '30043':'Lawrenceville','30044':'Lawrenceville','30062':'Marietta',
+  '30066':'Marietta','30067':'Marietta','30068':'Marietta',
+  '30075':'Roswell','30076':'Roswell','30092':'Peachtree Corners',
+  '30096':'Duluth','30097':'Duluth','30101':'Acworth','30102':'Acworth',
+  '30114':'Canton','30115':'Canton','30127':'Powder Springs','30132':'Dallas',
+  '30144':'Kennesaw','30152':'Kennesaw','30188':'Woodstock','30189':'Woodstock',
+  '30213':'Fairburn','30228':'Hampton','30238':'Jonesboro','30260':'Morrow',
+  '30269':'Peachtree City','30277':'Sharpsburg','30281':'Stockbridge',
+  '30291':'Union City','30294':'Ellenwood','30301':'Atlanta',
+  '30306':'Atlanta-VH','30307':'Atlanta-Inman','30308':'Atlanta-Midtown',
+  '30309':'Atlanta-Midtown','30316':'Atlanta-EAV','30317':'Kirkwood','30318':'Atlanta-W'
+};
 
-function getScore(z) {
-  return parseFloat(z.first_mover_score || z.composite_score || z.score || 0);
-}
+let allZips = [], currentFilter = 'all', selectedZip = null;
 
+function getCity(z) { return z.city || CITY_MAP[z.zip_code] || ''; }
+function getScore(z) { return parseFloat(z.first_mover_score || z.composite_score || z.score || 0); }
+function fmt(n) { return parseFloat(n).toFixed(1); }
 function getTier(z) {
   if (z.tier) return z.tier;
   const s = getScore(z);
-  if (s >= 75) return 'early_boom';
-  if (s >= 60) return 'warming';
-  if (s >= 40) return 'neutral';
-  return 'declining';
+  return s >= 75 ? 'early_boom' : s >= 60 ? 'warming' : s >= 40 ? 'neutral' : 'declining';
 }
-
-function tierLabel(tier) {
-  return tier === 'early_boom' ? 'EARLY BOOM' : tier === 'warming' ? 'WARMING' : tier === 'declining' ? 'DECLINING' : 'NEUTRAL';
+function tierLabel(t) { return t==='early_boom'?'EARLY BOOM':t==='warming'?'WARMING':t==='declining'?'DECLINING':'NEUTRAL'; }
+function tierClass(t) { return t==='early_boom'?'boom':t==='warming'?'warming':t==='declining'?'declining':'neutral'; }
+function fmtDate(d) {
+  if (!d || d==='--') return '--';
+  try { return new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+  catch(e) { return d; }
 }
 
 async function loadData() {
@@ -166,78 +178,70 @@ async function loadData() {
     renderTable();
     const now = new Date();
     document.getElementById('lastUpdated').textContent = 'Updated: ' + now.toLocaleTimeString();
+    if (allZips.length > 0) selectZip(allZips[0]);
   } catch(e) {
     document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
-    console.error(e);
   }
 }
 
 function updateStats() {
   const scores = allZips.map(z => getScore(z));
   const boom = allZips.filter(z => getScore(z) >= 75);
-  const topZ = allZips.reduce((a,b) => getScore(a) >= getScore(b) ? a : b, allZips[0] || {});
+  const topZ = allZips.reduce((a,b) => getScore(a)>=getScore(b)?a:b, allZips[0]||{});
   document.getElementById('totalZips').textContent = allZips.length;
   document.getElementById('boomCount').textContent = boom.length;
   const topS = getScore(topZ);
-  document.getElementById('topScore').textContent = topS > 0 ? topS : '--';
-  document.getElementById('topZipLabel').textContent = topZ.zip_code ? topZ.zip_code + ' \u2014 ' + (topZ.city || '') : '--';
+  document.getElementById('topScore').textContent = topS > 0 ? fmt(topS) : '--';
+  document.getElementById('topZipLabel').textContent = topZ.zip_code ? topZ.zip_code+' \u2014 '+getCity(topZ) : '--';
   const avg = scores.length ? (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1) : '--';
   document.getElementById('avgScore').textContent = avg;
 }
 
 function setFilter(f, btn) {
   currentFilter = f;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderTable();
 }
 
 function renderTable() {
-  const q = (document.getElementById('searchBox').value || '').toLowerCase();
+  const q = (document.getElementById('searchBox').value||'').toLowerCase();
   let rows = allZips.filter(z => {
     const tier = getTier(z);
     if (currentFilter !== 'all' && tier !== currentFilter) return false;
-    if (q && !String(z.zip_code).includes(q) && !(z.city||'').toLowerCase().includes(q)) return false;
+    const city = getCity(z);
+    if (q && !String(z.zip_code).includes(q) && !city.toLowerCase().includes(q)) return false;
     return true;
   });
-  rows.sort((a,b) => getScore(b) - getScore(a));
+  rows.sort((a,b) => getScore(b)-getScore(a));
   document.getElementById('panelCount').textContent = rows.length + ' zips';
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = rows.map(z => {
-    const score = getScore(z);
-    const tier = getTier(z);
-    const tClass = tier === 'early_boom' ? 'boom' : tier === 'warming' ? 'warming' : tier === 'declining' ? 'declining' : 'neutral';
-    const barW = Math.min(Math.round(score * 1.4), 140);
-    const isSel = selectedZip && selectedZip.zip_code === z.zip_code;
-    const zJson = JSON.stringify(z).replace(/"/g,'&quot;');
-    return '<tr onclick="selectZip(' + zJson + ')" class="' + (isSel?'selected':'') + '">'
-      + '<td><strong>' + z.zip_code + '</strong></td>'
-      + '<td>' + (z.city||'') + '</td>'
-      + '<td><div class="score-bar-wrap"><div class="score-bar" style="width:' + barW + 'px"></div><span class="score-num">' + score + '</span></div></td>'
-      + '<td><span class="tier-badge ' + tClass + '">' + tierLabel(tier) + '</span></td>'
-      + '</tr>';
+    const score = getScore(z), tier = getTier(z);
+    const tc = tierClass(tier), tl = tierLabel(tier);
+    const barW = Math.min(Math.round(score*1.4),140);
+    const isSel = selectedZip && selectedZip.zip_code===z.zip_code;
+    const zJ = JSON.stringify(z).replace(/"/g,'&quot;');
+    return '<tr onclick="selectZip('+zJ+')" class="'+(isSel?'selected':"")+'">'+'<td><strong>'+z.zip_code+'</strong></td>'+'<td>'+getCity(z)+'</td>'+'<td><div class="score-bar-wrap"><div class="score-bar" style="width:'+barW+'px"></div><span class="score-num">'+fmt(score)+'</span></div></td>'+'<td><span class="tier-badge '+tc+'">'+tl+'</span></td>'+'</tr>';
   }).join('');
 }
 
 function selectZip(z) {
   selectedZip = z;
-  const score = getScore(z);
-  const tier = getTier(z);
-  const tClass = tier === 'early_boom' ? 'boom' : tier === 'warming' ? 'warming' : tier === 'declining' ? 'declining' : 'neutral';
+  const score = getScore(z), tier = getTier(z), tc = tierClass(tier);
   document.getElementById('detailPlaceholder').style.display = 'none';
   document.getElementById('detailContent').style.display = 'block';
   document.getElementById('detailZip').textContent = z.zip_code;
-  document.getElementById('detailCity').textContent = (z.city||'') + ', GA';
-  document.getElementById('detailScore').textContent = score;
+  document.getElementById('detailCity').textContent = getCity(z) + ', GA';
+  document.getElementById('detailScore').textContent = fmt(score);
   const tb = document.getElementById('detailTier');
-  tb.textContent = tierLabel(tier);
-  tb.className = 'detail-tier-badge ' + tClass;
-  document.getElementById('sBusiness').textContent = z.business_license_score != null ? z.business_license_score : '--';
-  document.getElementById('sLiquor').textContent = z.liquor_license_score != null ? z.liquor_license_score : '--';
-  document.getElementById('sSchools').textContent = z.school_enrollment_score != null ? z.school_enrollment_score : '--';
-  document.getElementById('sTrends').textContent = z.google_trends_score != null ? z.google_trends_score : '--';
-  document.getElementById('sPermits').textContent = z.building_permit_score != null ? z.building_permit_score : '--';
-  document.getElementById('sDate').textContent = z.score_date || '--';
+  tb.textContent = tierLabel(tier); tb.className = 'detail-tier-badge '+tc;
+  document.getElementById('sBusiness').textContent = z.business_license_score!=null ? fmt(z.business_license_score) : '--';
+  document.getElementById('sLiquor').textContent = z.liquor_license_score!=null ? fmt(z.liquor_license_score) : '--';
+  document.getElementById('sSchools').textContent = z.school_enrollment_score!=null ? fmt(z.school_enrollment_score) : '--';
+  document.getElementById('sTrends').textContent = z.google_trends_score!=null ? fmt(z.google_trends_score) : '--';
+  document.getElementById('sPermits').textContent = z.building_permit_score!=null ? fmt(z.building_permit_score) : '--';
+  document.getElementById('sDate').textContent = fmtDate(z.score_date);
   renderTable();
 }
 
