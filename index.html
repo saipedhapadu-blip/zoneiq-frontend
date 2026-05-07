@@ -255,14 +255,14 @@ async function loadBusinesses(zip) {
     const data = await res.json();
     const list = data.businesses || [];
     if (!list.length) {
-      el.innerHTML = '<div class="biz-loading">No recent business records found for this zip.</div>';
+            el.innerHTML = '<div class="biz-loading">⚠️ This county has not made business license data publicly available.</div>';
       return;
     }
     el.innerHTML = list.map(b =>
       '<div class="biz-item"><div class="biz-name">'+b.name+'</div><div class="biz-meta">'+b.type+' &middot; '+b.date+'</div></div>'
     ).join('');
   } catch(e) {
-    el.innerHTML = '<div class="biz-loading">Unable to load businesses for this zip.</div>';
+        el.innerHTML = '<div class="biz-loading">⚠️ This county has not made business license data publicly available.</div>';
   }
 }
 loadData();
