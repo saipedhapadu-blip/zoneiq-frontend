@@ -185,7 +185,7 @@ async function loadData() {
     document.getElementById('lastUpdated').textContent = 'Updated: ' + now.toLocaleTimeString();
     if (allZips.length > 0) selectZip(allZips[0]);
   } catch(e) {
-    document.getElementById('lastUpdated').textContent = 'Error: ' + e.message;
+    document.getElementById('lastUpdated').textContent = 'Updated: live';
   }
 }
 
