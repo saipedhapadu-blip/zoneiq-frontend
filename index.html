@@ -63,7 +63,7 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
 .alerts-section{padding:16px 20px;border-top:1px solid #1e2840}
 .alerts-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px}
 .no-alerts{font-size:12px;color:#7a8fa6;font-style:italic}
-.placeholder-msg{padding:60px 20px;text-align:center;color:#7a8fa6;font-size:13px;line-height:1.8} .biz-section{padding:16px 20px;border-top:1px solid #1e2840} .biz-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:8px} .biz-loading{font-size:12px;color:#7a8fa6;font-style:italic} .biz-item{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid #1a2535} .biz-item:last-child{border-bottom:none} .biz-name{font-size:13px;color:#fff;font-weight:500} .biz-meta{font-size:11px;color:#7a8fa6}
+.placeholder-msg{padding:60px 20px;text-align:center;color:#7a8fa6;font-size:13px;line-height:1.8} .biz-section{padding:16px 20px;border-top:1px solid #1e2840} .biz-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:8px} .biz-loading{font-size:12px;color:#7a8fa6;font-style:italic} .biz-item{display:flex;flex-direction:column;gap:2px;padding:8px 0;border-bottom:1px solid #1a2535} .biz-item:last-child{border-bottom:none} .biz-name{font-size:13px;color:#fff;font-weight:500} .biz-meta{font-size:11px;color:#7a8fa6} .family-section{padding:16px 20px;border-top:1px solid #1e2840} .family-title{font-size:13px;font-weight:600;color:#fff;margin-bottom:10px;display:flex;align-items:center;gap:8px} .family-score-num{font-size:36px;font-weight:700;color:#00d4aa;margin:4px 0} .family-tier{display:inline-block;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:600;margin:4px 0 8px} .family-tier.high{background:#003d2a;color:#00d4aa;border:1px solid #00d4aa} .family-tier.rising{background:#2a2000;color:#ffaa00;border:1px solid #ffaa00} .family-tier.neutral{background:#1e2840;color:#7a8fa6;border:1px solid #2a3a4a} .family-tier.declining{background:#2a0a0a;color:#ff4444;border:1px solid #ff4444} .family-label{font-size:12px;color:#7a8fa6;margin-bottom:10px} .family-signals{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px} .family-signal{background:#111d2e;border:1px solid #1e2840;border-radius:8px;padding:8px;text-align:center} .family-signal .sig-val{font-size:18px;font-weight:700;color:#fff} .family-signal .sig-label{font-size:10px;color:#7a8fa6;text-transform:uppercase;margin-top:2px} .family-loading{font-size:12px;color:#7a8fa6;font-style:italic}
 </style>
 </head>
 <body>
@@ -124,7 +124,8 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
         </div>
         <div class="alerts-section">
           <div class="alerts-title">Recent Alerts</div>
-          <div class="no-alerts" id="alertsBox">No alerts fired yet for this zip.</div></div><div class="biz-section"><div class="biz-title">🏢 Incoming Businesses</div><div id="bizList"><div class="biz-loading">Loading businesses...</div></div></div</div>
+          <div class="no-alerts" id="alertsBox">No alerts fired yet for this zip.</div></div><div class="biz-section"><div class="biz-title">🏢 Incoming Businesses</div><div 127
+                                                                                                                                                                          ><div class="biz-loading">Loading businesses...</div></div></div</div><div class="family-section"><div class="family-title">🏡 Family Migration Score</div><div id="familyScoreSection"><div class="family-loading">Loading...</div></div></div>
         </div>
       </div>
     </div>
@@ -243,7 +244,7 @@ function selectZip(z) {
   document.getElementById('sPermits').textContent = z.building_permit_score!=null ? fmt(z.building_permit_score) : '--';
   document.getElementById('sDate').textContent = fmtDate(z.score_date);
   renderTable();
-  loadBusinesses(z.zip_code);
+  loadBusinesses(z.zip_code); loadFamilyScore(z.zip_code);
 }
 async function loadBusinesses(zip) {
   const el = document.getElementById('bizList');
@@ -264,6 +265,28 @@ async function loadBusinesses(zip) {
   } catch(e) {
         el.innerHTML = '<div class="biz-loading">⚠️ This county has not made business license data publicly available.</div>';
   }
+async function loadFamilyScore(zip) {
+  const el = document.getElementById('familyScoreSection');
+  if (!el) return;
+  el.innerHTML = '<div class="family-loading">Analyzing family desirability signals...</div>';
+  try {
+    const res = await fetch(API + '/family-score/' + zip);
+    if (!res.ok) throw new Error('Failed');
+    const d = await res.json();
+    const tierCls = d.tier==='High Growth'?'high':d.tier==='Rising'?'rising':d.tier==='Neutral'?'neutral':'declining';
+    const schoolList = d.signals.school_names && d.signals.school_names.length ? '<div style="font-size:11px;color:#7a8fa6;margin-top:6px">Schools: '+d.signals.school_names.join(', ')+'</div>' : '';
+    el.innerHTML = '<div class="family-score-num">'+d.family_score+'</div>'+
+      '<span class="family-tier '+tierCls+'">'+d.tier+'</span>'+
+      '<div class="family-label">'+d.label+'</div>'+
+      '<div class="family-signals">'+
+        '<div class="family-signal"><div class="sig-val">'+d.signals.school_score+'</div><div class="sig-label">Schools</div></div>'+
+        '<div class="family-signal"><div class="sig-val">'+d.signals.permit_score+'</div><div class="sig-label">Permits</div></div>'+
+        '<div class="family-signal"><div class="sig-val">'+d.signals.safety_score+'</div><div class="sig-label">Safety</div></div>'+
+      '</div>'+schoolList;
+  } catch(e) {
+    el.innerHTML = '<div class="family-loading">⚠️ Family score unavailable for this zip.</div>';
+  }
+}
 }
 loadData();
 </script>
