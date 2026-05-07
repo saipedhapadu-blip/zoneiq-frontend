@@ -1,4 +1,4 @@
-<!-- v2.1 -->
+<!-- v2.2 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -129,7 +129,7 @@ table td{padding:12px 16px;font-size:13px;border-bottom:1px solid #1e2840}
         <div class="alerts-section">
           <div class="alerts-title">Recent Alerts</div>
           <div class="no-alerts" id="alertsBox">No alerts fired yet for this zip.</div></div><div class="biz-section"><div class="biz-title">🏢 Incoming Businesses</div><div 127
-                                                                                                                                                                          ><div class="biz-loading">Loading businesses...</div></div></div</div><div class="family-section"><div class="family-title">🏡 Family Migration Score</div><div id="familyScoreSection"><div class="family-loading">Loading...</div></div></div>
+                                                                                                                                                                          ><div class="biz-loading">Loading businesses...</div></div></div</div><div class="family-section"><div class="family-title">🏡 Family Migration Score</div><div id="familyScoreBody"><div class="family-loading">Loading...</div></div></div>
         </div>
       </div>
     </div>
@@ -248,7 +248,7 @@ function selectZip(z) {
   document.getElementById('sPermits').textContent = z.building_permit_score!=null ? fmt(z.building_permit_score) : '--';
   document.getElementById('sDate').textContent = fmtDate(z.score_date);
   renderTable();
-  loadBusinesses(z.zip_code); if(typeof loadFamilyScore==='function')loadFamilyScore(z.zip_code);
+  loadBusinesses(z.zip_code); loadFamilyScore(z.zip_code);
 }
 async function loadBusinesses(zip) {
   const el = document.getElementById('bizList');
@@ -270,7 +270,7 @@ async function loadBusinesses(zip) {
         el.innerHTML = '<div class="biz-loading">⚠️ This county has not made business license data publicly available.</div>';
   }
 async function loadFamilyScore(zip) {
-  const el = document.getElementById('familyScoreSection');
+  const el = document.getElementById('familyScoreBody');
   if (!el) return;
   el.innerHTML = '<div class="family-loading">Analyzing family desirability signals...</div>';
   try {
